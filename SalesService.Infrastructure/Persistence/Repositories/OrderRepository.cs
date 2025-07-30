@@ -18,7 +18,7 @@ namespace SalesService.Infrastructure.Persistence.Repositories
             return await dbContext.Orders
                                    .ToListAsync(cancellationToken);
         }
-
+        
         public async Task<IEnumerable<Order>> ListAsync(Expression<Func<Order, bool>> predicate, CancellationToken cancellationToken = default)
         {
             return await dbContext.Orders

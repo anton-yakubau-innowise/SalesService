@@ -8,7 +8,6 @@ namespace SalesService.Domain.Repositories
         Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
         Task<IEnumerable<Order>> ListAllAsync(CancellationToken cancellationToken = default);
         Task<IEnumerable<Order>> ListAsync(Expression<Func<Order, bool>> predicate, CancellationToken cancellationToken = default);
-
         Task AddAsync(Order order, CancellationToken cancellationToken = default);
         void Delete(Order order);
     }
