@@ -6,6 +6,8 @@ using SalesService.Application.Interfaces;
 [Route("api/[controller]")]
 public class OrdersController(IOrderApplicationService orderService) : ControllerBase
 {
+    const string LastCustomerIdCookieName = "LastCustomerId";
+
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllOrders(CancellationToken cancellationToken)
@@ -20,16 +22,7 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     {
         var orders = await orderService.GetCustomerOrdersAsync(customerId, cancellationToken);
 
-        Response.Cookies.Append(
-            "LastCustomerId",
-            customerId.ToString(),
-            new CookieOptions {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(1)
-            }
-        );
+        AppendCustomerIdCookie(customerId);
 
         return Ok(orders);
     }
@@ -39,7 +32,7 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetDefaultCustomerOrders(CancellationToken cancellationToken)
     {
-        var lastCustomerId = Request.Cookies["LastCustomerId"];
+        var lastCustomerId = Request.Cookies[LastCustomerIdCookieName];
 
         if (string.IsNullOrEmpty(lastCustomerId) || !Guid.TryParse(lastCustomerId, out var lastCustomerGuid))
         {
@@ -48,16 +41,7 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
 
         var orders = await orderService.GetCustomerOrdersAsync(lastCustomerGuid, cancellationToken);
 
-        Response.Cookies.Append(
-            "LastCustomerId",
-            lastCustomerGuid.ToString(),
-            new CookieOptions {
-                HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(1)
-            }
-        );
+        AppendCustomerIdCookie(lastCustomerGuid);
 
         return Ok(orders);
     }
@@ -133,4 +117,21 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
         await orderService.ConfirmOrderAsync(orderId, cancellationToken);
         return NoContent();
     }
+
+
+    private void AppendCustomerIdCookie(Guid lastCustomerGuid)
+    {
+        Response.Cookies.Append(
+            LastCustomerIdCookieName,
+            lastCustomerGuid.ToString(),
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTimeOffset.UtcNow.AddHours(1)
+            }
+        );
+    }
 }
+

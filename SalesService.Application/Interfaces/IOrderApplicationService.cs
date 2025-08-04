@@ -9,9 +9,9 @@ public interface IOrderApplicationService
     Task<IEnumerable<OrderDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default);
     Task<IEnumerable<OrderDto>> GetCustomerOrdersAsync(Guid customerId, CancellationToken cancellationToken = default);
     Task<Guid> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken = default);
-    Task BeginAwaitingPaymentAsync(Guid orderId, CancellationToken cancellationToken);
-    Task ConfirmOrderPaymentAsync(Guid orderId, CancellationToken cancellationToken);
-    Task ConfirmOrderAsync(Guid orderId, CancellationToken cancellationToken);
-    Task CancelOrderAsync(Guid orderId, string reason, CancellationToken cancellationToken);
+    Task BeginAwaitingPaymentAsync(Guid orderId, CancellationToken cancellationToken = default);
+    Task ConfirmOrderPaymentAsync(Guid orderId, CancellationToken cancellationToken = default);
+    Task ConfirmOrderAsync(Guid orderId, CancellationToken cancellationToken = default);
+    Task CancelOrderAsync(Guid orderId, string reason, CancellationToken cancellationToken = default);
     Task DeleteOrderAsync(Guid id, CancellationToken cancellationToken = default);
 }
