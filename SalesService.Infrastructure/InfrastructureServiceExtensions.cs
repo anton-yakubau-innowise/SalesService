@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SalesService.Application.Exceptions;
 using SalesService.Application.Interfaces;
 using SalesService.Domain.Repositories;
 using SalesService.Infrastructure.ApiClients;
@@ -19,7 +20,14 @@ public static class InfrastructureServiceExtensions
 
         services.AddGrpcClient<VehicleApi.VehicleApiClient>(o =>
         {
-            o.Address = new Uri(configuration["ServiceUrls:VehicleService"]);
+            var serviceUrl = configuration["ServiceUrls:VehicleService"];
+
+            if (string.IsNullOrEmpty(serviceUrl))
+            {
+                throw new ConfigurationException("Address for VehicleService not found in configuration (ServiceUrls:VehicleService).");
+            }
+
+            o.Address = new Uri(serviceUrl);
         });
 
         services.AddScoped<IOrderRepository, OrderRepository>();
