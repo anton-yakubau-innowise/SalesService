@@ -1,23 +1,24 @@
 using AutoMapper;
 using SalesService.Application.Dtos;
 using SalesService.Application.Interfaces;
+using SalesService.Domain.Common;
 using SalesService.Domain.Entities;
 
 namespace SalesService.Application.Services;
 
-public class OrderApplicationService(IUnitOfWork unitOfWork, IMapper mapper) : IOrderApplicationService
+public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiClient vehicleService, IMapper mapper) : IOrderApplicationService
 {
 
     public async Task<OrderDto?> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var order = await GetNoTrackingOrderAndEnsureExistsAsync(id, cancellationToken);
+        var order = await GetNoTrackingOrderNotEnsureExistsAsync(id, cancellationToken);
 
         return mapper.Map<OrderDto>(order);
     }
 
     public async Task<OrderWithCancellationReasonDto?> GetOrderWithCancellationReasonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var order = await GetNoTrackingOrderAndEnsureExistsAsync(id, cancellationToken);
+        var order = await GetNoTrackingOrderNotEnsureExistsAsync(id, cancellationToken);
 
         return mapper.Map<OrderWithCancellationReasonDto>(order);
     }
@@ -38,10 +39,17 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IMapper mapper) : I
 
     public async Task<Guid> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken)
     {
+        var vehicleDetails = await vehicleService.GetVehicleDetailsAsync(request.VehicleId, cancellationToken);
+
+        if (vehicleDetails is null)
+        {
+            throw new ArgumentException($"Vehicle with ID {request.VehicleId} not found.");
+        }
+
         var order = Order.Create(
             request.CustomerId,
             request.VehicleId,
-            new Domain.ValueObjects.Money(0, "USD") //Later connection to VehicleService to get the price
+            new Domain.ValueObjects.Money(vehicleDetails.Price, vehicleDetails.Currency)
         );
 
         await unitOfWork.Orders.AddAsync(order, cancellationToken);
@@ -102,13 +110,14 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IMapper mapper) : I
         return order;
     }
 
-    private async Task<Order> GetNoTrackingOrderAndEnsureExistsAsync(Guid id, CancellationToken cancellationToken)
+    private async Task<Order?> GetNoTrackingOrderNotEnsureExistsAsync(Guid id, CancellationToken cancellationToken)
     {
+        Guard.AgainstEmptyGuid(id, nameof(id));
         var order = await unitOfWork.Orders.GetByIdAsNoTrackingAsync(id, cancellationToken);
 
         if (order is null)
         {
-            throw new KeyNotFoundException($"Order with ID {id} not found.");
+            return null;
         }
 
         return order;

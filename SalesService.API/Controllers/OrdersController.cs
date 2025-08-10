@@ -7,6 +7,7 @@ using SalesService.Application.Interfaces;
 public class OrdersController(IOrderApplicationService orderService) : ControllerBase
 {
     const string LastCustomerIdCookieName = "LastCustomerId";
+    const double LastCustomerIdExpirationHours = 1;
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
@@ -129,7 +130,7 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(1)
+                Expires = DateTimeOffset.UtcNow.AddHours(LastCustomerIdExpirationHours)
             }
         );
     }
