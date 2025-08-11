@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using SalesService.Application.Dtos;
 using SalesService.Application.Interfaces;
 
+namespace SalesService.API.Controllers;
+
 [ApiController]
 [Route("api/[controller]")]
 public class OrdersController(IOrderApplicationService orderService) : ControllerBase
@@ -53,6 +55,10 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     public async Task<IActionResult> GetOrderById(Guid id, CancellationToken cancellationToken)
     {
         var order = await orderService.GetOrderByIdAsync(id, cancellationToken);
+        
+        if (order is null)
+            return NotFound();
+        
         return Ok(order);
     }
 
@@ -62,6 +68,10 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     public async Task<IActionResult> GetOrderByIdWithCancellationReason(Guid id, CancellationToken cancellationToken)
     {
         var order = await orderService.GetOrderWithCancellationReasonByIdAsync(id, cancellationToken);
+
+        if (order is null)
+            return NotFound();
+            
         return Ok(order);
     }
 
@@ -101,21 +111,21 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
         return NoContent();
     }
 
-    [HttpPost("{orderId:guid}/cancel")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> CancelOrder(Guid orderId, [FromBody] CancelOrderRequest request, CancellationToken cancellationToken)
-    {
-        await orderService.CancelOrderAsync(orderId, request.CancellationReason, cancellationToken);
-        return NoContent();
-    }
-
     [HttpPost("{orderId:guid}/confirm")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ConfirmOrder(Guid orderId, CancellationToken cancellationToken)
     {
         await orderService.ConfirmOrderAsync(orderId, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{orderId:guid}/cancel")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> CancelOrder(Guid orderId, [FromBody] CancelOrderRequest request, CancellationToken cancellationToken)
+    {
+        await orderService.CancelOrderAsync(orderId, request.CancellationReason, cancellationToken);
         return NoContent();
     }
 

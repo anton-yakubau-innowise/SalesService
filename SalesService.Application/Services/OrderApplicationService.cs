@@ -13,12 +13,22 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiC
     {
         var order = await GetNoTrackingOrderNotEnsureExistsAsync(id, cancellationToken);
 
+        if (order is null)
+        {
+            return null;
+        }
+
         return mapper.Map<OrderDto>(order);
     }
 
     public async Task<OrderWithCancellationReasonDto?> GetOrderWithCancellationReasonByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var order = await GetNoTrackingOrderNotEnsureExistsAsync(id, cancellationToken);
+
+        if (order is null)
+        {
+            return null;
+        }
 
         return mapper.Map<OrderWithCancellationReasonDto>(order);
     }
@@ -114,11 +124,6 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiC
     {
         Guard.AgainstEmptyGuid(id, nameof(id));
         var order = await unitOfWork.Orders.GetByIdAsNoTrackingAsync(id, cancellationToken);
-
-        if (order is null)
-        {
-            return null;
-        }
 
         return order;
     }

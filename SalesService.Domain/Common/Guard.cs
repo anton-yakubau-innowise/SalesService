@@ -5,6 +5,8 @@ namespace SalesService.Domain.Common
 {
     public static class Guard
     {
+        static TimeSpan RegexMatchTimeout => TimeSpan.FromMilliseconds(100);
+
         public static void AgainstEmptyGuid(Guid argument, [CallerArgumentExpression("argument")] string? paramName = null)
         {
             if (argument == Guid.Empty)
@@ -65,7 +67,7 @@ namespace SalesService.Domain.Common
         public static void AgainstInvalidCurrencyCodeFormat(string? argument, [CallerArgumentExpression("argument")] string? paramName = null)
         {
             AgainstNullOrWhiteSpace(argument, paramName);
-            if (argument!.Length != 3 || !Regex.IsMatch(argument, @"^[A-Z]{3}$"))
+            if (argument!.Length != 3 || !Regex.IsMatch(argument, @"^[A-Z]{3}$", RegexOptions.None, matchTimeout: RegexMatchTimeout))
             {
                 throw new ArgumentException("Currency code must be 3 uppercase letters (e.g., USD, EUR).", paramName);
             }
