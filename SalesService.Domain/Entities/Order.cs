@@ -19,7 +19,7 @@ namespace SalesService.Domain.Entities
         public string? CancellationReason { get; private set; }
 
         private Order() { }
-
+ 
         private Order(Guid customerId, Guid vehicleId, Money totalPrice, OrderStatus status)
         {
             Id = Guid.NewGuid();
@@ -28,7 +28,6 @@ namespace SalesService.Domain.Entities
             TotalPrice = totalPrice;
             Status = status;
             CreatedAt = DateTime.UtcNow;
-
         }
         
         public static Order Create(Guid customerId, Guid vehicleId, Money totalPrice)
