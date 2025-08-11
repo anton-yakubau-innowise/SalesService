@@ -1,0 +1,18 @@
+# Папки сборки .NET
+bin/
+obj/
+
+# Файлы Git
+.git/
+.gitignore
+
+# Настройки IDE
+.vscode/
+*.sln
+
+# Docker-файлы
+Dockerfile*
+docker-compose*
+
+# Секреты
+.env
