@@ -7,6 +7,9 @@ COPY ["SalesService.API/SalesService.API.csproj", "SalesService.API/"]
 COPY ["SalesService.Application/SalesService.Application.csproj", "SalesService.Application/"]
 COPY ["SalesService.Domain/SalesService.Domain.csproj", "SalesService.Domain/"]
 COPY ["SalesService.Infrastructure/SalesService.Infrastructure.csproj", "SalesService.Infrastructure/"]
+COPY ["SalesService.UnitTests/SalesService.UnitTests.csproj", "SalesService.UnitTests/"]
+COPY ["SalesService.IntegrationTests/SalesService.IntegrationTests.csproj", "SalesService.IntegrationTests/"]
+
 
 RUN dotnet restore "SalesService.sln"
 
