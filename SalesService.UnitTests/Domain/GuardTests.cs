@@ -96,7 +96,7 @@ public class GuardTests
         Action act = () => Guard.AgainstStringLength(value!, exactLength, nameof(value));
 
         // Assert
-        act.Should().Throw<ArgumentException>();
+        act.Should().Throw<ArgumentNullException>();
     }
 
     [Theory]
@@ -177,13 +177,12 @@ public class GuardTests
     }
 
     [Theory]
-    [InlineData("0.0")]
-    [InlineData("0.1")]
-    [InlineData("12345.67")]
-    public void AgainstNegative_Decimal_WhenArgumentIsZeroOrPositive_DoesNotThrow(string nonNegativeValueStr)
+    [InlineData(0.0)]
+    [InlineData(0.1)]
+    [InlineData(12345.67)]
+    public void AgainstNegative_Decimal_WhenArgumentIsZeroOrPositive_DoesNotThrow(decimal nonNegativeValue)
     {
         // Arrange
-        var nonNegativeValue = decimal.Parse(nonNegativeValueStr, System.Globalization.CultureInfo.InvariantCulture);
 
         // Act
         Action act = () => Guard.AgainstNegative(nonNegativeValue);

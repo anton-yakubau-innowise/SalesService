@@ -14,16 +14,18 @@ public class OrderTests
         var customerId = Guid.NewGuid();
         var vehicleId = Guid.NewGuid();
         var price = new Money(50000, "USD");
+        var timeBeforeAct = DateTime.UtcNow;
 
         // Act
         var order = Order.Create(customerId, vehicleId, price);
+        var timeAfterAct = DateTime.UtcNow;
 
         order.Should().NotBeNull();
         order.CustomerId.Should().Be(customerId);
         order.VehicleId.Should().Be(vehicleId);
         order.TotalPrice.Should().Be(price);
         order.Status.Should().Be(OrderStatus.Pending);
-        order.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        order.CreatedAt.Should().BeOnOrAfter(timeBeforeAct).And.BeOnOrBefore(timeAfterAct);
     }
 
     [Fact]
@@ -46,13 +48,15 @@ public class OrderTests
     {
         // Arrange
         var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), new Money(50000, "USD"));
+        var timeBeforeAct = DateTime.UtcNow;
 
         // Act
         order.CompleteProcessing();
+        var timeAfterAct = DateTime.UtcNow;
 
         // Assert
         order.Status.Should().Be(OrderStatus.AwaitingPayment);
-        order.UpdatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        order.UpdatedAt.Should().BeOnOrAfter(timeBeforeAct).And.BeOnOrBefore(timeAfterAct);
     }
 
     [Fact]
@@ -75,14 +79,16 @@ public class OrderTests
         // Arrange
         var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), new Money(50000, "USD"));
         order.CompleteProcessing();
+        var timeBeforeAct = DateTime.UtcNow;
 
         // Act
         order.ConfirmPayment();
+        var timeAfterAct = DateTime.UtcNow;
 
         // Assert
         order.Status.Should().Be(OrderStatus.Paid);
         order.PaidAt.Should().NotBeNull();
-        order.PaidAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        order.PaidAt.Should().BeOnOrAfter(timeBeforeAct).And.BeOnOrBefore(timeAfterAct);
     }
 
     [Fact]
@@ -118,14 +124,16 @@ public class OrderTests
         // Arrange
         var order = Order.Create(Guid.NewGuid(), Guid.NewGuid(), new Money(50000, "USD"));
         order.CompleteProcessing();
+        var timeBeforeAct = DateTime.UtcNow;
 
         // Act
         order.Cancel("Test reason");
+        var timeAfterAct = DateTime.UtcNow;
 
         // Assert
         order.Status.Should().Be(OrderStatus.Cancelled);
         order.CancelledAt.Should().NotBeNull();
-        order.CancelledAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        order.CancelledAt.Should().BeOnOrAfter(timeBeforeAct).And.BeOnOrBefore(timeAfterAct);
     }
 
     [Fact]

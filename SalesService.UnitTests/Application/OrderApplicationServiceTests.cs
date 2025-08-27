@@ -268,6 +268,7 @@ public class OrderApplicationServiceTests
 
         // Assert
         order.Status.Should().Be(OrderStatus.AwaitingPayment);
+        unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -305,6 +306,8 @@ public class OrderApplicationServiceTests
 
         // Assert
         order.Status.Should().Be(OrderStatus.Paid);
+        unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        
     }
 
     [Fact]
@@ -343,6 +346,7 @@ public class OrderApplicationServiceTests
 
         // Assert
         order.Status.Should().Be(OrderStatus.Confirmed);
+        unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

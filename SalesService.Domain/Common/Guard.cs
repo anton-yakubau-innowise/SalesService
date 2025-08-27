@@ -27,7 +27,7 @@ namespace SalesService.Domain.Common
         {
             if (string.IsNullOrWhiteSpace(argument))
             {
-                throw new ArgumentException("String parameter cannot be null or whitespace.", paramName);
+                throw new ArgumentNullException("String parameter cannot be null or whitespace.", paramName);
             }
         }
 
