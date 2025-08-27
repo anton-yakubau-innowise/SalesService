@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SalesService.API;
+using SalesService.API.Configuration;
 using SalesService.API.Middleware;
 using SalesService.Application;
 using SalesService.Infrastructure;
@@ -10,6 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddApiServices();
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices(builder.Configuration);
+
+builder.Services.AddOptions<CookieSettings>()
+    .Bind(builder.Configuration.GetSection("CookieSettings"))
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 var app = builder.Build();
 

@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using SalesService.API.Configuration;
 using SalesService.Application.Dtos;
 using SalesService.Application.Interfaces;
 
@@ -6,10 +8,9 @@ namespace SalesService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController(IOrderApplicationService orderService) : ControllerBase
+public class OrdersController(IOrderApplicationService orderService, IOptions<CookieSettings> cookieSettings) : ControllerBase
 {
-    const string LastCustomerIdCookieName = "LastCustomerId";
-    const double LastCustomerIdExpirationHours = 1;
+    private readonly CookieSetting lastCustomerIdCookie = cookieSettings.Value.LastCustomerId;
 
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<OrderDto>), StatusCodes.Status200OK)]
@@ -35,7 +36,7 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetDefaultCustomerOrders(CancellationToken cancellationToken)
     {
-        var lastCustomerId = Request.Cookies[LastCustomerIdCookieName];
+        var lastCustomerId = Request.Cookies[lastCustomerIdCookie.Key];
 
         if (string.IsNullOrEmpty(lastCustomerId) || !Guid.TryParse(lastCustomerId, out var lastCustomerGuid))
         {
@@ -133,14 +134,14 @@ public class OrdersController(IOrderApplicationService orderService) : Controlle
     private void AppendCustomerIdCookie(Guid lastCustomerGuid)
     {
         Response.Cookies.Append(
-            LastCustomerIdCookieName,
+            lastCustomerIdCookie.Key,
             lastCustomerGuid.ToString(),
             new CookieOptions
             {
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTimeOffset.UtcNow.AddHours(LastCustomerIdExpirationHours)
+                Expires = DateTimeOffset.UtcNow.AddHours(lastCustomerIdCookie.ExpirationHours)
             }
         );
     }
