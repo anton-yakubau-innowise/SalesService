@@ -1,18 +1,24 @@
-# Папки сборки .NET
-bin/
-obj/
-
-# Файлы Git
-.git/
-.gitignore
-
-# Настройки IDE
-.vscode/
-*.sln
-
-# Docker-файлы
-Dockerfile*
-docker-compose*
-
-# Секреты
-.env
+**/.classpath
+**/.dockerignore
+**/.env
+**/.git
+**/.gitignore
+**/.project
+**/.settings
+**/.toolstarget
+**/.vs
+**/.vscode
+**/*.*proj.user
+**/*.dbmdl
+**/*.jfm
+**/azds.yaml
+**/bin
+**/charts
+**/docker-compose.yml
+**/Dockerfile
+**/Dockerfile.develop
+**/obj
+**/secrets.dev.yaml
+**/values.dev.yaml
+LICENSE
+README.md
