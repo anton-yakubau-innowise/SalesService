@@ -11,7 +11,8 @@ COPY ["SalesService.UnitTests/SalesService.UnitTests.csproj", "SalesService.Unit
 COPY ["SalesService.IntegrationTests/SalesService.IntegrationTests.csproj", "SalesService.IntegrationTests/"]
 
 
-RUN dotnet restore "SalesService.sln"
+RUN --mount=type=secret,id=nugetconfig,dst=/root/.nuget/NuGet/NuGet.Config \
+    dotnet restore "SalesService.sln"
 
 COPY . .
 

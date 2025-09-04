@@ -3,10 +3,17 @@ using SalesService.Application.Dtos;
 using SalesService.Application.Interfaces;
 using SalesService.Domain.Common;
 using SalesService.Domain.Entities;
+using MassTransit;
+using Contracts;
 
 namespace SalesService.Application.Services;
 
-public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiClient vehicleService, IMapper mapper) : IOrderApplicationService
+public class OrderApplicationService(
+    IUnitOfWork unitOfWork,
+    IVehicleServiceApiClient vehicleService,
+    IUserServiceApiClient userService,
+    IMapper mapper,
+    IPublishEndpoint publishEndpoint) : IOrderApplicationService
 {
 
     public async Task<OrderDto?> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken)
@@ -49,20 +56,24 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiC
 
     public async Task<Guid> CreateOrderAsync(CreateOrderRequest request, CancellationToken cancellationToken)
     {
-        var vehicleDetails = await vehicleService.GetVehicleDetailsAsync(request.VehicleId, cancellationToken);
+        var vehicleDetails = await vehicleService.GetVehicleDetailsAsync(request.VehicleId, cancellationToken)
+            ?? throw new ArgumentException($"Vehicle with ID {request.VehicleId} not found.");
 
-        if (vehicleDetails is null)
-        {
-            throw new ArgumentException($"Vehicle with ID {request.VehicleId} not found.");
-        }
+        var userDetails = await userService.GetUserContactInfoAsync(request.CustomerId, cancellationToken)
+            ?? throw new ArgumentException($"User with ID {request.CustomerId} not found.");
+
+        var totalPrice = new Domain.ValueObjects.Money(vehicleDetails.Price, vehicleDetails.Currency);
 
         var order = Order.Create(
             request.CustomerId,
             request.VehicleId,
-            new Domain.ValueObjects.Money(vehicleDetails.Price, vehicleDetails.Currency)
+            totalPrice
         );
 
         await unitOfWork.Orders.AddAsync(order, cancellationToken);
+
+        await PublishOrderCreated(userDetails, order, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return order.Id;
@@ -126,5 +137,22 @@ public class OrderApplicationService(IUnitOfWork unitOfWork, IVehicleServiceApiC
         var order = await unitOfWork.Orders.GetByIdAsNoTrackingAsync(id, cancellationToken);
 
         return order;
+    }
+
+    private async Task PublishOrderCreated(UserContactInfoDto userDetails, Order order, CancellationToken cancellationToken)
+    {
+        var orderCreatedEvent = new OrderCreatedEvent(
+            order.Id,
+            order.CustomerId,
+            order.VehicleId,
+            userDetails.Email,
+            userDetails.PhoneNumber,
+            new MoneyDto(
+                Amount: order.TotalPrice.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                CurrencyCode: order.TotalPrice.Currency
+            )
+        );
+
+        await publishEndpoint.Publish(orderCreatedEvent, cancellationToken);
     }
 }
