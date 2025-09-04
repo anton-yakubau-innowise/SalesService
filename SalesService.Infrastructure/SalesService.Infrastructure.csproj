@@ -9,6 +9,7 @@
   <ItemGroup>
     <ProjectReference Include="..\SalesService.Application\SalesService.Application.csproj" />
     <Protobuf Include="..\SalesService.API\Protos\vehicle.proto" GrpcServices="Client" />
+    <Protobuf Include="..\SalesService.API\Protos\user_contact_info.proto" GrpcServices="Client" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,6 +25,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="9.0.8" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
   </ItemGroup>
 
