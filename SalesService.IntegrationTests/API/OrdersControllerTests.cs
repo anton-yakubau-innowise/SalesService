@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -17,6 +18,8 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
 {
     private readonly HttpClient client;
     private readonly Mock<IVehicleServiceApiClient> vehicleServiceMock;
+    private readonly Mock<IUserServiceApiClient> userServiceMock;
+    private readonly Mock<IPublishEndpoint> publishEndpointMock;
     private readonly JsonSerializerOptions jsonOptions;
     private readonly CustomWebApplicationFactory<Program> factory;
 
@@ -24,6 +27,8 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
     {
         this.factory = factory;
         vehicleServiceMock = factory.VehicleServiceMock;
+        userServiceMock = factory.UserServiceMock;
+        publishEndpointMock = factory.PublishEndpointMock;
         client = factory.CreateClient();
 
         jsonOptions = new JsonSerializerOptions
@@ -42,6 +47,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
+
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
 
         await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
         await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
@@ -81,6 +91,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
+
+        var userContactInfo = new UserContactInfoDto(customerId, "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(customerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
 
         await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(customerId, vehicleDetails.Id));
         await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(customerId, vehicleDetails.Id));
@@ -128,6 +143,10 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
+        var userContactInfo = new UserContactInfoDto(customerId, "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(customerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
 
         await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(customerId, vehicleDetails.Id));
 
@@ -168,7 +187,13 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // Act
@@ -202,7 +227,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // Act
@@ -243,6 +272,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
             .Setup(s => s.GetVehicleDetailsAsync(vehicleId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
 
+        var userContactInfo = new UserContactInfoDto(customerId, "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(customerId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+
         // Act
         var response = await client.PostAsJsonAsync("/api/orders", request);
 
@@ -282,7 +316,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // Act
@@ -316,7 +354,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // Act
@@ -371,7 +413,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         await client.PostAsync($"/api/orders/{createdOrderId}/await-payment", null);
@@ -408,7 +454,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         // Act
@@ -426,7 +476,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
         
         await client.PostAsync($"/api/orders/{createdOrderId}/await-payment", null);
@@ -464,7 +518,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
 
         await client.PostAsync($"/api/orders/{createdOrderId}/await-payment", null);
@@ -484,7 +542,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
         var cancelRequest = new CancelOrderRequest("Customer changed their mind");
 
@@ -522,7 +584,11 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
         vehicleServiceMock
             .Setup(s => s.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
-        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(Guid.NewGuid(), vehicleDetails.Id));
+        var userContactInfo = new UserContactInfoDto(Guid.NewGuid(), "test@example.com");
+        userServiceMock
+            .Setup(s => s.GetUserContactInfoAsync(userContactInfo.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(userContactInfo);
+        var createResponse = await client.PostAsJsonAsync("/api/orders", new CreateOrderRequest(userContactInfo.Id, vehicleDetails.Id));
         var createdOrderId = await createResponse.Content.ReadFromJsonAsync<Guid>();
         var cancelRequest = new CancelOrderRequest("Test reason");
 

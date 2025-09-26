@@ -9,6 +9,7 @@ using SalesService.Infrastructure.ApiClients;
 using SalesService.Infrastructure.Options;
 using SalesService.Infrastructure.Persistence;
 using SalesService.Infrastructure.Persistence.Repositories;
+using UserService.GRPC;
 using VehicleService.GRPC;
 
 namespace SalesService.Infrastructure;
@@ -27,6 +28,18 @@ public static class InfrastructureServiceExtensions
             if (string.IsNullOrEmpty(serviceUrl))
             {
                 throw new Application.Exceptions.ConfigurationException("Address for VehicleService not found in configuration (ServiceUrls:VehicleService).");
+            }
+
+            o.Address = new Uri(serviceUrl);
+        });
+        
+        services.AddGrpcClient<UserApi.UserApiClient>(o =>
+        {
+            var serviceUrl = configuration["ServiceUrls:UserService"];
+
+            if (string.IsNullOrEmpty(serviceUrl))
+            {
+                throw new Application.Exceptions.ConfigurationException("Address for UserService not found in configuration (ServiceUrls:UserService).");
             }
 
             o.Address = new Uri(serviceUrl);

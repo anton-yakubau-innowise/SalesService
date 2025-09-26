@@ -4,14 +4,11 @@ namespace SalesService.Infrastructure.Options;
 
 public class RabbitMqOptions
 {
-    public const string SectionName = "MassTransit";
+    public const string SectionName = "MassTransit:RabbitMq";
 
-    [Required]
     public string Host { get; set; } = string.Empty;
 
-    [Required]
     public string Username { get; set; } = string.Empty;
 
-    [Required]
     public string Password { get; set; } = string.Empty;
 }

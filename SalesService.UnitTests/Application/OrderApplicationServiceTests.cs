@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using AutoMapper;
 using FluentAssertions;
+using MassTransit;
 using Moq;
 using SalesService.Application.Dtos;
 using SalesService.Application.Interfaces;
@@ -18,6 +19,8 @@ public class OrderApplicationServiceTests
     private readonly Mock<IUnitOfWork> unitOfWorkMock;
     private readonly Mock<IMapper> mapperMock;
     private readonly Mock<IVehicleServiceApiClient> vehicleServiceMock;
+    private readonly Mock<IUserServiceApiClient> userServiceMock;
+    private readonly Mock<IPublishEndpoint> publishEndpointMock;
     private readonly OrderApplicationService sut;
 
     public OrderApplicationServiceTests()
@@ -26,13 +29,19 @@ public class OrderApplicationServiceTests
         unitOfWorkMock = new Mock<IUnitOfWork>();
         mapperMock = new Mock<IMapper>();
         vehicleServiceMock = new Mock<IVehicleServiceApiClient>();
+        userServiceMock = new Mock<IUserServiceApiClient>();
+        publishEndpointMock = new Mock<IPublishEndpoint>();
+
+
 
         unitOfWorkMock.Setup(uow => uow.Orders).Returns(orderRepositoryMock.Object);
 
         sut = new OrderApplicationService(
             unitOfWorkMock.Object,
             vehicleServiceMock.Object,
-            mapperMock.Object
+            userServiceMock.Object,
+            mapperMock.Object,
+            publishEndpointMock.Object
         );
     }
 
@@ -226,6 +235,10 @@ public class OrderApplicationServiceTests
             .Setup(v => v.GetVehicleDetailsAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(vehicleDetails);
 
+        userServiceMock
+            .Setup(u => u.GetUserContactInfoAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UserContactInfoDto(request.CustomerId, "john.doe@example.com", "123-456-7890"));
+            
         //Act
         var result = await sut.CreateOrderAsync(request, CancellationToken.None);
 

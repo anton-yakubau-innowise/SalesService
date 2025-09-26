@@ -71,10 +71,9 @@ public class OrderApplicationService(
         );
 
         await unitOfWork.Orders.AddAsync(order, cancellationToken);
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         await PublishOrderCreated(userDetails, order, cancellationToken);
-
-        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return order.Id;
     }

@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -13,11 +14,15 @@ namespace SalesService.IntegrationTests;
 public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProgram>, IAsyncLifetime where TProgram : class
 {
     public Mock<IVehicleServiceApiClient> VehicleServiceMock { get; }
+    public Mock<IUserServiceApiClient> UserServiceMock { get; }
+    public Mock<IPublishEndpoint> PublishEndpointMock { get; }
     private readonly PostgreSqlContainer dbContainer;
 
     public CustomWebApplicationFactory()
     {
         VehicleServiceMock = new Mock<IVehicleServiceApiClient>();
+        UserServiceMock = new Mock<IUserServiceApiClient>();
+        PublishEndpointMock = new Mock<IPublishEndpoint>();
         dbContainer = new PostgreSqlBuilder()
             .WithImage("postgres:latest")
             .WithDatabase("test_sales_db")
@@ -41,12 +46,27 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
                 options.UseNpgsql(dbContainer.GetConnectionString());
             });
 
-            var apiClientDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IVehicleServiceApiClient));
-            if (apiClientDescriptor != null)
+            var vehicleServiceDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IVehicleServiceApiClient));
+            if (vehicleServiceDescriptor != null)
             {
-                services.Remove(apiClientDescriptor);
+                services.Remove(vehicleServiceDescriptor);
             }
+
+            var userServiceDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IUserServiceApiClient));
+            if (userServiceDescriptor != null)
+            {
+                services.Remove(userServiceDescriptor);
+            }
+
+            var publishEndpointDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IPublishEndpoint));
+            if (publishEndpointDescriptor != null)
+            {
+                services.Remove(publishEndpointDescriptor);
+            }
+
             services.AddScoped<IVehicleServiceApiClient>(_ => VehicleServiceMock.Object);
+            services.AddScoped<IUserServiceApiClient>(_ => UserServiceMock.Object);
+            services.AddScoped<IPublishEndpoint>(_ => PublishEndpointMock.Object);
         });
     }
 
