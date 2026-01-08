@@ -26,7 +26,7 @@ RUN dotnet publish "SalesService.API.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-COPY --from=build /src/SalesService.API/app/publish .
+COPY --from=build app/publish .
 
 
 ENTRYPOINT ["dotnet", "SalesService.API.dll"]
