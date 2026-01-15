@@ -4,7 +4,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentAssertions;
 using MassTransit;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SalesService.Application.Dtos;
@@ -604,15 +603,16 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
     }
 
 
-
-
-
-
-
     private void ResetDatabaseState()
     {
         using var scope = factory.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<SalesDbContext>();
-        dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Orders\" RESTART IDENTITY CASCADE");
+
+        var allOrders = dbContext.Orders.ToList();
+        if (allOrders.Any())
+        {
+            dbContext.Orders.RemoveRange(allOrders);
+            dbContext.SaveChanges();
+        }
     }
 }

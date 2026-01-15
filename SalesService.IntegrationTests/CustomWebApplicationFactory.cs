@@ -1,11 +1,13 @@
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Azure.Cosmos;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using SalesService.Application.Interfaces;
 using SalesService.Infrastructure.Persistence;
+using Testcontainers.CosmosDb;
 using Testcontainers.PostgreSql;
 
 namespace SalesService.IntegrationTests;
@@ -16,18 +18,15 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
     public Mock<IVehicleServiceApiClient> VehicleServiceMock { get; }
     public Mock<IUserServiceApiClient> UserServiceMock { get; }
     public Mock<IPublishEndpoint> PublishEndpointMock { get; }
-    private readonly PostgreSqlContainer dbContainer;
+    private readonly CosmosDbContainer dbContainer;
 
     public CustomWebApplicationFactory()
     {
         VehicleServiceMock = new Mock<IVehicleServiceApiClient>();
         UserServiceMock = new Mock<IUserServiceApiClient>();
         PublishEndpointMock = new Mock<IPublishEndpoint>();
-        dbContainer = new PostgreSqlBuilder()
-            .WithImage("postgres:latest")
-            .WithDatabase("test_sales_db")
-            .WithUsername("test")
-            .WithPassword("test")
+        dbContainer = new CosmosDbBuilder("mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest")
+            .WithCleanUp(true)
             .Build();
     }
 
@@ -43,7 +42,18 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
 
             services.AddDbContext<SalesDbContext>(options =>
             {
-                options.UseNpgsql(dbContainer.GetConnectionString());
+                options.UseCosmos(
+                    dbContainer.GetConnectionString(),
+                    databaseName: "IntegrationTestsDb",
+                    cosmosOptions =>
+                    {
+                        cosmosOptions.HttpClientFactory(() => new HttpClient(new HttpClientHandler()
+                        {
+                            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                        }));
+
+                        cosmosOptions.ConnectionMode(ConnectionMode.Gateway);
+                        });
             });
 
             var vehicleServiceDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IVehicleServiceApiClient));
