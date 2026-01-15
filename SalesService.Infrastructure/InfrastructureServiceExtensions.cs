@@ -18,8 +18,10 @@ public static class InfrastructureServiceExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<OrderDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<SalesDbContext>(options =>
+            options.UseCosmos(
+                connectionString: configuration.GetConnectionString("DefaultConnection") ?? throw new ConfigurationException("Cosmos DB connection string not found in configuration."),
+                databaseName: configuration["CosmosDb:DatabaseName"] ?? throw new ConfigurationException("Cosmos DB database name not found in configuration (CosmosDb:DatabaseName).")));
 
         services.AddGrpcClient<VehicleApi.VehicleApiClient>(o =>
         {

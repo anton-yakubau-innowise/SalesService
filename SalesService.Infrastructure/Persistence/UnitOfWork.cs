@@ -4,7 +4,7 @@ using SalesService.Infrastructure.Persistence.Repositories;
 
 namespace SalesService.Infrastructure.Persistence
 {
-public class UnitOfWork(OrderDbContext dbContext) : IUnitOfWork
+public class UnitOfWork(SalesDbContext dbContext) : IUnitOfWork
 {
     public IOrderRepository Orders { get; } = new OrderRepository(dbContext);
 

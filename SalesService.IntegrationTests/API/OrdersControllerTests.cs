@@ -612,7 +612,7 @@ public class OrdersControllerTests : IClassFixture<CustomWebApplicationFactory<P
     private void ResetDatabaseState()
     {
         using var scope = factory.Services.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
+        var dbContext = scope.ServiceProvider.GetRequiredService<SalesDbContext>();
         dbContext.Database.ExecuteSqlRaw("TRUNCATE TABLE \"Orders\" RESTART IDENTITY CASCADE");
     }
 }

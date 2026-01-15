@@ -35,13 +35,13 @@ public class CustomWebApplicationFactory<TProgram> : WebApplicationFactory<TProg
     {
         builder.ConfigureServices(services =>
         {
-            var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<OrderDbContext>));
+            var dbContextDescriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<SalesDbContext>));
             if (dbContextDescriptor != null)
             {
                 services.Remove(dbContextDescriptor);
             }
 
-            services.AddDbContext<OrderDbContext>(options =>
+            services.AddDbContext<SalesDbContext>(options =>
             {
                 options.UseNpgsql(dbContainer.GetConnectionString());
             });
