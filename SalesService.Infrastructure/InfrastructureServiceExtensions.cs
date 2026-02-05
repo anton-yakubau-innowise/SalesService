@@ -72,18 +72,15 @@ public static class InfrastructureServiceExtensions
             {
                 busConfigurator.UsingRabbitMq((context, cfg) =>
                 {
-                    busConfigurator.UsingRabbitMq((context, cfg) =>
-                    {
-                        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+                    var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
 
-                        cfg.Host(options.Host, options.VirtualHost, h =>
-                        {
-                            h.Username(options.Username);
-                            h.Password(options.Password);
-                        });
+                    cfg.Host(options.Host, options.VirtualHost, h =>
+                    {
+                        h.Username(options.Username);
+                        h.Password(options.Password);
                     });
                 });
-            }
+        }
         });
 
         services.AddScoped<IOrderRepository, OrderRepository>();
