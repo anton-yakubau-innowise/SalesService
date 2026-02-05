@@ -46,24 +46,44 @@ public static class InfrastructureServiceExtensions
 
             o.Address = new Uri(serviceUrl);
         });
-
+        
         services.AddOptions<RabbitMqOptions>()
-            .Bind(configuration.GetSection(RabbitMqOptions.SectionName))
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+            .Bind(configuration.GetSection(RabbitMqOptions.SectionName));
+
+        services.AddOptions<AzureServiceBusOptions>()
+            .Bind(configuration.GetSection(AzureServiceBusOptions.SectionName));
             
         services.AddMassTransit(busConfigurator =>
         {
-            busConfigurator.UsingRabbitMq((context, cfg) =>
-            {
-                var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+            busConfigurator.SetKebabCaseEndpointNameFormatter();
 
-                cfg.Host(options.Host, options.VirtualHost, h =>
+            var asbOptions = configuration.GetSection(AzureServiceBusOptions.SectionName).Get<AzureServiceBusOptions>();
+            var connectionString = asbOptions?.ConnectionString;
+
+            if (!string.IsNullOrEmpty(connectionString))
+            {
+                busConfigurator.UsingAzureServiceBus((context, cfg) =>
                 {
-                    h.Username(options.Username);
-                    h.Password(options.Password);
+                    cfg.Host(connectionString);
+                    cfg.ConfigureEndpoints(context);
                 });
-            });
+            }
+            else
+            {
+                busConfigurator.UsingRabbitMq((context, cfg) =>
+                {
+                    busConfigurator.UsingRabbitMq((context, cfg) =>
+                    {
+                        var options = context.GetRequiredService<IOptions<RabbitMqOptions>>().Value;
+
+                        cfg.Host(options.Host, options.VirtualHost, h =>
+                        {
+                            h.Username(options.Username);
+                            h.Password(options.Password);
+                        });
+                    });
+                });
+            }
         });
 
         services.AddScoped<IOrderRepository, OrderRepository>();
