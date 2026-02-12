@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Extensions.Http;
 using SalesService.Application.Interfaces;
 using SalesService.Domain.Repositories;
 using SalesService.Infrastructure.ApiClients;
@@ -33,7 +35,9 @@ public static class InfrastructureServiceExtensions
             }
 
             o.Address = new Uri(serviceUrl);
-        });
+        })
+        .AddPolicyHandler(GetRetryPolicy())
+        .AddPolicyHandler(GetCircuitBreakerPolicy());
         
         services.AddGrpcClient<UserApi.UserApiClient>(o =>
         {
@@ -45,7 +49,9 @@ public static class InfrastructureServiceExtensions
             }
 
             o.Address = new Uri(serviceUrl);
-        });
+        })
+        .AddPolicyHandler(GetRetryPolicy())
+        .AddPolicyHandler(GetCircuitBreakerPolicy());
         
         services.AddOptions<RabbitMqOptions>()
             .Bind(configuration.GetSection(RabbitMqOptions.SectionName));
@@ -89,5 +95,26 @@ public static class InfrastructureServiceExtensions
         services.AddScoped<IUserServiceApiClient, UserServiceApiClient>();
 
         return services;
+    }
+
+    private static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+    {
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .WaitAndRetryAsync(
+                retryCount: 3, 
+                sleepDurationProvider: retryAttempt => 
+                    TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) 
+            );
+    }
+
+    private static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+    {
+        return HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .CircuitBreakerAsync(
+                handledEventsAllowedBeforeBreaking: 5, 
+                durationOfBreak: TimeSpan.FromSeconds(30)
+            );
     }
 }
