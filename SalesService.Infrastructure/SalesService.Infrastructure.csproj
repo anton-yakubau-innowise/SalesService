@@ -10,6 +10,7 @@
     <ProjectReference Include="..\SalesService.Application\SalesService.Application.csproj" />
     <Protobuf Include="..\SalesService.API\Protos\vehicle.proto" GrpcServices="Client" />
     <Protobuf Include="..\SalesService.API\Protos\user_contact_info.proto" GrpcServices="Client" />
+    <Protobuf Include="..\SalesService.API\Protos\reserve_vehicle.proto" GrpcServices="Client" />
   </ItemGroup>
 
   <ItemGroup>

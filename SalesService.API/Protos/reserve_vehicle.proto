@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option csharp_namespace = "VehicleService.GRPC";
+
+service VehicleApi {
+  rpc ReserveVehicle (ReserveVehicleRequest) returns (ReserveVehicleResponse);
+}
+
+message ReserveVehicleRequest {
+  string vehicle_id = 1;
+}
+
+message ReserveVehicleResponse {
+  bool succeed = 1;
+}

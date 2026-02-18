@@ -75,6 +75,8 @@ public class OrderApplicationService(
 
         await PublishOrderCreated(userDetails, order, cancellationToken);
 
+        await vehicleService.ReserveVehicleAsync(request.VehicleId, cancellationToken);
+
         return order.Id;
     }
 

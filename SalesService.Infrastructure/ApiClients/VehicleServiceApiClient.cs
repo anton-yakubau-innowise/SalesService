@@ -32,4 +32,18 @@ public class VehicleServiceApiClient(VehicleApi.VehicleApiClient grpcClient) : I
             return null;
         }
     }
+
+    public async Task<bool> ReserveVehicleAsync(Guid vehicleId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var request = new ReserveVehicleRequest { VehicleId = vehicleId.ToString() };
+            var response = await grpcClient.ReserveVehicleAsync(request, cancellationToken: cancellationToken);
+            return response.Succeed;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            return false;
+        }
+    }
 }
