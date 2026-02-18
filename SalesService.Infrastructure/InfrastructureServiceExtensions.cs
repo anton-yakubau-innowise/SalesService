@@ -36,6 +36,13 @@ public static class InfrastructureServiceExtensions
 
             o.Address = new Uri(serviceUrl);
         })
+        .ConfigureChannel(o =>
+        {
+            o.HttpHandler = new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true
+            };
+        })
         .AddPolicyHandler(GetRetryPolicy())
         .AddPolicyHandler(GetCircuitBreakerPolicy());
         
@@ -49,6 +56,13 @@ public static class InfrastructureServiceExtensions
             }
 
             o.Address = new Uri(serviceUrl);
+        })
+        .ConfigureChannel(o =>
+        {
+            o.HttpHandler = new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true
+            };
         })
         .AddPolicyHandler(GetRetryPolicy())
         .AddPolicyHandler(GetCircuitBreakerPolicy());
