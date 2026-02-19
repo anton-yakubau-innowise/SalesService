@@ -13,6 +13,7 @@ using SalesService.Infrastructure.Persistence;
 using SalesService.Infrastructure.Persistence.Repositories;
 using UserService.GRPC;
 using VehicleService.GRPC;
+using System.Net;
 
 namespace SalesService.Infrastructure;
 
@@ -36,12 +37,15 @@ public static class InfrastructureServiceExtensions
 
             o.Address = new Uri(serviceUrl);
         })
-        .ConfigureChannel(o =>
+        .ConfigureHttpClient(client =>
         {
-            o.HttpHandler = new SocketsHttpHandler
-            {
-                EnableMultipleHttp2Connections = true
-            };
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            EnableMultipleHttp2Connections = true,
+            ConnectTimeout = TimeSpan.FromSeconds(30)
         })
         .AddPolicyHandler(GetRetryPolicy())
         .AddPolicyHandler(GetCircuitBreakerPolicy());
@@ -57,12 +61,15 @@ public static class InfrastructureServiceExtensions
 
             o.Address = new Uri(serviceUrl);
         })
-        .ConfigureChannel(o =>
+        .ConfigureHttpClient(client =>
         {
-            o.HttpHandler = new SocketsHttpHandler
-            {
-                EnableMultipleHttp2Connections = true
-            };
+            client.DefaultRequestVersion = HttpVersion.Version20;
+            client.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        })
+        .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+        {
+            EnableMultipleHttp2Connections = true,
+            ConnectTimeout = TimeSpan.FromSeconds(30)
         })
         .AddPolicyHandler(GetRetryPolicy())
         .AddPolicyHandler(GetCircuitBreakerPolicy());
