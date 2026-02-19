@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "UserService.GRPC";
+
+service UserApi {
+  rpc GetUserContactInfo (GetUserContactInfoRequest) returns (UserContactInfoResponse);
+}
+
+message GetUserContactInfoRequest {
+  string user_id = 1;
+}
+
+message UserContactInfoResponse {
+  string id = 1;
+  string email = 2;
+  string phone_number = 3;
+}

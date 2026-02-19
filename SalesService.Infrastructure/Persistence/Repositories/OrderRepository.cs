@@ -5,7 +5,7 @@ using SalesService.Domain.Repositories;
 
 namespace SalesService.Infrastructure.Persistence.Repositories
 {
-    public class OrderRepository(OrderDbContext dbContext) : IOrderRepository
+    public class OrderRepository(SalesDbContext dbContext) : IOrderRepository
     {
         public async Task<Order?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         {

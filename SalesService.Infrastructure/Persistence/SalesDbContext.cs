@@ -4,11 +4,11 @@ using SalesService.Domain.Entities;
 
 namespace SalesService.Infrastructure.Persistence
 {
-    public class OrderDbContext : DbContext
+    public class SalesDbContext : DbContext
     {
         public DbSet<Order> Orders { get; set; }
 
-        public OrderDbContext(DbContextOptions<OrderDbContext> options)
+        public SalesDbContext(DbContextOptions<SalesDbContext> options)
             : base(options)
         {
         }

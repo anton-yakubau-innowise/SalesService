@@ -11,7 +11,8 @@ COPY ["SalesService.UnitTests/SalesService.UnitTests.csproj", "SalesService.Unit
 COPY ["SalesService.IntegrationTests/SalesService.IntegrationTests.csproj", "SalesService.IntegrationTests/"]
 
 
-RUN dotnet restore "SalesService.sln"
+RUN --mount=type=secret,id=nugetconfig,dst=/root/.nuget/NuGet/NuGet.Config \
+    dotnet restore "SalesService.sln"
 
 COPY . .
 
@@ -25,7 +26,7 @@ RUN dotnet publish "SalesService.API.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 
-COPY --from=build /src/SalesService.API/app/publish .
+COPY --from=build app/publish .
 
 
 ENTRYPOINT ["dotnet", "SalesService.API.dll"]

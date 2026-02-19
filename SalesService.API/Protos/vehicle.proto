@@ -4,6 +4,7 @@ option csharp_namespace = "VehicleService.GRPC";
 
 service VehicleApi {
   rpc GetVehicleDetails (GetVehicleDetailsRequest) returns (VehicleDetailsResponse);
+  rpc ReserveVehicle (ReserveVehicleRequest) returns (ReserveVehicleResponse);
 }
 
 message GetVehicleDetailsRequest {
@@ -15,4 +16,12 @@ message VehicleDetailsResponse {
   string model = 2;
   string price = 3;
   string currency = 4;
+}
+
+message ReserveVehicleRequest {
+  string vehicle_id = 1;
+}
+
+message ReserveVehicleResponse {
+  bool succeed = 1;
 }

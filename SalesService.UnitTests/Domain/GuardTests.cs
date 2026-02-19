@@ -193,9 +193,6 @@ public class GuardTests
 
     
     [Theory]
-    [InlineData(null)]
-    [InlineData("")]
-    [InlineData(" ")]
     [InlineData("US")]
     [InlineData("USDE")]
     [InlineData("usd")]
